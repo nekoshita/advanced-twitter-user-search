@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd ..
+protoc --go_out=./server/src/interfaces/gen --go_opt=module=github.com/nekoshita/advanced-twitter-user-search/server/src/interfaces/gen \
+    --go-grpc_out=./server/src/interfaces/gen --go-grpc_opt=module=github.com/nekoshita/advanced-twitter-user-search/server/src/interfaces/gen \
+    protobuf/*.proto
