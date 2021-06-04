@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FollowServiceClient interface {
 	FollowUser(ctx context.Context, in *FollowUserMessage, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UnfollowUser(ctx context.Context, in *FollowUserMessage, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UnfollowUser(ctx context.Context, in *UnfollowUserMessage, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type followServiceClient struct {
@@ -40,7 +40,7 @@ func (c *followServiceClient) FollowUser(ctx context.Context, in *FollowUserMess
 	return out, nil
 }
 
-func (c *followServiceClient) UnfollowUser(ctx context.Context, in *FollowUserMessage, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *followServiceClient) UnfollowUser(ctx context.Context, in *UnfollowUserMessage, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/advanced_twitter_user_search.FollowService/UnfollowUser", in, out, opts...)
 	if err != nil {
@@ -54,7 +54,7 @@ func (c *followServiceClient) UnfollowUser(ctx context.Context, in *FollowUserMe
 // for forward compatibility
 type FollowServiceServer interface {
 	FollowUser(context.Context, *FollowUserMessage) (*emptypb.Empty, error)
-	UnfollowUser(context.Context, *FollowUserMessage) (*emptypb.Empty, error)
+	UnfollowUser(context.Context, *UnfollowUserMessage) (*emptypb.Empty, error)
 	mustEmbedUnimplementedFollowServiceServer()
 }
 
@@ -65,7 +65,7 @@ type UnimplementedFollowServiceServer struct {
 func (UnimplementedFollowServiceServer) FollowUser(context.Context, *FollowUserMessage) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FollowUser not implemented")
 }
-func (UnimplementedFollowServiceServer) UnfollowUser(context.Context, *FollowUserMessage) (*emptypb.Empty, error) {
+func (UnimplementedFollowServiceServer) UnfollowUser(context.Context, *UnfollowUserMessage) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnfollowUser not implemented")
 }
 func (UnimplementedFollowServiceServer) mustEmbedUnimplementedFollowServiceServer() {}
@@ -100,7 +100,7 @@ func _FollowService_FollowUser_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _FollowService_UnfollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FollowUserMessage)
+	in := new(UnfollowUserMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func _FollowService_UnfollowUser_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/advanced_twitter_user_search.FollowService/UnfollowUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FollowServiceServer).UnfollowUser(ctx, req.(*FollowUserMessage))
+		return srv.(FollowServiceServer).UnfollowUser(ctx, req.(*UnfollowUserMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
