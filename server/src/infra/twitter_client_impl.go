@@ -40,7 +40,8 @@ const (
 	searchParamPageMaxValue = 51
 )
 
-// pageは1が最小値、51が最大値
+// https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-search
+// pageは1が最小値、51が最大値（つまり、最大で検索可能なユーザーは1000件まで）
 func (c *twitterClientImpl) Search(ctx context.Context, query string, page int) ([]domain.User, error) {
 	if page < searchParamPageMinValue {
 		return nil, consts.ErrTwitterSearchParamPagesTooSmall

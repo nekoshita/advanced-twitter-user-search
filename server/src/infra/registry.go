@@ -3,6 +3,7 @@ package infra
 import (
 	"github.com/nekoshita/advanced-twitter-user-search/server/src/interfaces"
 	pb "github.com/nekoshita/advanced-twitter-user-search/server/src/interfaces/gen/advanced_twitter_user_search"
+	"github.com/nekoshita/advanced-twitter-user-search/server/src/usecase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
@@ -22,9 +23,12 @@ func NewServer(
 		twitterUserAccessSecret,
 	)
 
+	// services
+	twitterService := usecase.NewTwitterService(twitterClient)
+
 	// handler
 	healthcheckHandler := interfaces.NewHealthServer()
-	userHandler := interfaces.NewUserHandler(twitterClient)
+	userHandler := interfaces.NewUserHandler(twitterService)
 	followHandler := interfaces.NewFollowHandler()
 
 	// server
