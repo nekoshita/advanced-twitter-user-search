@@ -8,13 +8,13 @@ import "google/protobuf/empty.proto";
 
 service FollowService {
   rpc FollowUser (FollowUserMessage) returns (google.protobuf.Empty) {}
-  rpc UnfollowUser (FollowUserMessage) returns (google.protobuf.Empty) {}
+  rpc UnfollowUser (UnfollowUserMessage) returns (google.protobuf.Empty) {}
 }
 
 message FollowUserMessage {
-  string userID = 1;
+  string screenName = 1;
 }
 
 message UnfollowUserMessage {
-  string userID = 1;
+  string screenName = 1;
 }
