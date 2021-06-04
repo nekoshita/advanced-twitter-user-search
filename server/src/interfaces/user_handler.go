@@ -27,7 +27,7 @@ func (h *userHandlerImpl) SearchUsers(ctx context.Context, msg *pb.SearchUsersMe
 	log.Print("-----------SearchUsers-----------------")
 	log.Print(msg.Query)
 
-	users, err := h.twitterService.Search(ctx, msg.Query)
+	users, err := h.twitterService.SearchUsers(ctx, msg.Query)
 	if err != nil {
 		return nil, xerrors.Errorf("failed to twitterService.Search: %w", err)
 	}

@@ -29,13 +29,13 @@ func NewServer(
 	// handler
 	healthcheckHandler := interfaces.NewHealthServer()
 	userHandler := interfaces.NewUserHandler(twitterService)
-	followHandler := interfaces.NewFollowHandler()
+	followHandler := interfaces.NewFollowHandler(twitterService)
 
 	// server
 	server := grpc.NewServer()
 	grpc_health_v1.RegisterHealthServer(server, healthcheckHandler)
-	pb.RegisterUserServiceServer(server, userHandler)
 	pb.RegisterFollowServiceServer(server, followHandler)
+	pb.RegisterUserServiceServer(server, userHandler)
 
 	// add reflection for debug
 	reflection.Register(server)

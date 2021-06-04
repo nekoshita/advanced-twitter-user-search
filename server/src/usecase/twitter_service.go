@@ -10,7 +10,8 @@ import (
 )
 
 type TwitterService interface {
-	Search(ctx context.Context, query string) ([]domain.User, error)
+	SearchUsers(ctx context.Context, query string) ([]domain.User, error)
+	FollowUser(ctx context.Context, screenName string) error
 }
 
 type twitterServiceImpl struct {
@@ -26,12 +27,12 @@ func NewTwitterService(
 }
 
 // Search は最大で50回のAPIリクエストを行い、最大で1000件のユーザーを返す
-func (s *twitterServiceImpl) Search(ctx context.Context, query string) ([]domain.User, error) {
+func (s *twitterServiceImpl) SearchUsers(ctx context.Context, query string) ([]domain.User, error) {
 	users := make([]domain.User, 0)
 
 	page := 1
 	for {
-		searchedUsers, err := s.twitterClient.Search(ctx, query, page)
+		searchedUsers, err := s.twitterClient.SearchUsers(ctx, query, page)
 		if err != nil {
 			switch {
 			case errors.Is(err, consts.ErrTwitterSearchParamPagesTooBig):
@@ -51,4 +52,12 @@ func (s *twitterServiceImpl) Search(ctx context.Context, query string) ([]domain
 	}
 
 	return users, nil
+}
+
+func (s *twitterServiceImpl) FollowUser(ctx context.Context, screenName string) error {
+	if err := s.twitterClient.FollowUser(ctx, screenName); err != nil {
+		return xerrors.Errorf("failed to twitterClient.FollowUser: %w", err)
+	}
+
+	return nil
 }

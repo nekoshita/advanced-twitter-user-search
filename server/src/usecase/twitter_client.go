@@ -7,5 +7,6 @@ import (
 )
 
 type TwitterClient interface {
-	Search(ctx context.Context, query string, page int) ([]domain.User, error)
+	SearchUsers(ctx context.Context, query string, page int) ([]domain.User, error)
+	FollowUser(ctx context.Context, screenName string) error
 }

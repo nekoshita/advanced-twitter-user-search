@@ -2,7 +2,9 @@ package infra
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
+	"net/http"
 
 	"github.com/dghubble/oauth1"
 	"github.com/nekoshita/advanced-twitter-user-search/server/src/domain"
@@ -42,7 +44,7 @@ const (
 
 // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-search
 // pageは1が最小値、51が最大値（つまり、最大で検索可能なユーザーは1000件まで）
-func (c *twitterClientImpl) Search(ctx context.Context, query string, page int) ([]domain.User, error) {
+func (c *twitterClientImpl) SearchUsers(ctx context.Context, query string, page int) ([]domain.User, error) {
 	if page < searchParamPageMinValue {
 		return nil, consts.ErrTwitterSearchParamPagesTooSmall
 	}
@@ -50,17 +52,17 @@ func (c *twitterClientImpl) Search(ctx context.Context, query string, page int) 
 		return nil, consts.ErrTwitterSearchParamPagesTooBig
 	}
 
-	twitterUsers, res, err := c.client.Users.Search(query, &twitter.UserSearchParams{
+	twitterUsers, resp, err := c.client.Users.Search(query, &twitter.UserSearchParams{
 		Count: searchParamCount,
 		Page:  page,
 	})
-	if res != nil {
-		log.Printf("requested to [%s], response status code is [%d]", res.Request.URL, res.StatusCode)
-	} else {
-		log.Print("response of twitter users search api is nil")
-	}
+	defer resp.Body.Close()
+	c.logResponse(resp)
 	if err != nil {
 		return nil, xerrors.Errorf("failed to call twitter user search api: %w", err)
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, consts.ErrTwitterApiUnauthorized
 	}
 
 	users := make([]domain.User, len(twitterUsers))
@@ -72,4 +74,39 @@ func (c *twitterClientImpl) Search(ctx context.Context, query string, page int) 
 		}
 	}
 	return users, nil
+}
+
+func (c *twitterClientImpl) FollowUser(ctx context.Context, screenName string) error {
+	user, resp, err := c.client.Friendships.Create(&twitter.FriendshipCreateParams{
+		ScreenName: screenName,
+	})
+	defer resp.Body.Close()
+	c.logResponse(resp)
+	if err != nil {
+		return xerrors.Errorf("failed to call twitter create follow api: %w", err)
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return consts.ErrTwitterApiUnauthorized
+	}
+
+	log.Printf("successfully followed or sent follow request to user [@%s]", user.ScreenName)
+
+	return nil
+}
+
+func (c *twitterClientImpl) logResponse(resp *http.Response) {
+	if resp != nil {
+		log.Printf("requested to [%s], response status code is [%d]", resp.Request.URL, resp.StatusCode)
+		if resp.StatusCode >= 400 {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Print("failed to read response body from twitter api")
+				log.Print(err)
+			} else {
+				log.Printf("%s", body)
+			}
+		}
+	} else {
+		log.Print("response of twitter users search api is nil")
+	}
 }
