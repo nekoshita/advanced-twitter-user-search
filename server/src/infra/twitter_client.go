@@ -15,7 +15,7 @@ type twitterClientImpl struct {
 	client *twitter.Client
 }
 
-func NewTiwtterClient(
+func NewTwitterClient(
 	twitterConsumerKey string,
 	twitterConsumerSecret string,
 	twitterUserAccessToken string,

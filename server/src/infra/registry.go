@@ -15,7 +15,7 @@ func NewServer(
 	twitterUserAccessSecret string,
 ) *grpc.Server {
 	// client
-	twitterClient := NewTiwtterClient(
+	twitterClient := NewTwitterClient(
 		twitterConsumerKey,
 		twitterConsumerSecret,
 		twitterUserAccessToken,
