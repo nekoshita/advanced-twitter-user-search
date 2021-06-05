@@ -127,7 +127,6 @@ func (c *twitterClientImpl) UnfollowUser(ctx context.Context, screenName string)
 }
 
 func (c *twitterClientImpl) logResponse(resp *http.Response) {
-	// go-twitterは内部でgithub.com/dghubble/slingを利用してHTTPリクエストを送っている
 	// go-twitter uses github.com/dghubble/sling to send HTTP requests.
 	// You cant log response.Body because sling closes response.Body inside its library
 	log.Printf("requested to [%s:%s], response status code is [%d]", resp.Request.Method, resp.Request.URL, resp.StatusCode)

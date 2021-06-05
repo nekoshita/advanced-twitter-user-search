@@ -27,7 +27,7 @@ func NewTwitterService(
 	}
 }
 
-// Search は最大で50回のAPIリクエストを行い、最大で1000件のユーザーを返す
+// Search sends api requests 50 times at most, returns 1,000 users at most
 func (s *twitterServiceImpl) SearchUsers(ctx context.Context, query string) ([]domain.User, error) {
 	users := make([]domain.User, 0)
 
