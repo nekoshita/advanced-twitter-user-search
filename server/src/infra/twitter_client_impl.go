@@ -3,7 +3,6 @@ package infra
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -124,18 +123,7 @@ func (c *twitterClientImpl) UnfollowUser(ctx context.Context, screenName string)
 }
 
 func (c *twitterClientImpl) logResponse(resp *http.Response) {
-	if resp != nil {
-		log.Printf("requested to [%s], response status code is [%d]", resp.Request.URL, resp.StatusCode)
-		if resp.StatusCode >= 400 {
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Print("failed to read response body from twitter api")
-				log.Print(err)
-			} else {
-				log.Printf("%s", body)
-			}
-		}
-	} else {
-		log.Print("response of twitter users search api is nil")
-	}
+	// go-twitterは内部でgithub.com/dghubble/slingを利用してHTTPリクエストを送っている
+	// slingはresponse.Bodyはすでにcloseしているので、ここでresponse.Bodyを出力することはできない
+	log.Printf("requested to [%s:%s], response status code is [%d]", resp.Request.Method, resp.Request.URL, resp.StatusCode)
 }
