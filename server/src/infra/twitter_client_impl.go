@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -77,19 +78,47 @@ func (c *twitterClientImpl) SearchUsers(ctx context.Context, query string, page 
 }
 
 func (c *twitterClientImpl) FollowUser(ctx context.Context, screenName string) error {
+	// すでにフォローしてる場合は200が返ってくる時と403が返ってくる場合がある
 	user, resp, err := c.client.Friendships.Create(&twitter.FriendshipCreateParams{
 		ScreenName: screenName,
 	})
 	defer resp.Body.Close()
 	c.logResponse(resp)
 	if err != nil {
-		return xerrors.Errorf("failed to call twitter create follow api: %w", err)
+		switch err.Error() {
+		// 鍵アカウントをすでにフォローしてる場合、[twitter: 160 You've already requested to follow lemor303442.]というエラーが返ってくる
+		// その場合はこのアプリケーション内部ではエラーとして扱わない
+		// エラーの文字列比較はしたくないが、go-twitterの実装上仕方がない
+		case fmt.Sprintf("twitter: 160 You've already requested to follow %s.", screenName):
+			log.Print(err)
+		default:
+			return xerrors.Errorf("failed to call twitter create follow api: %w", err)
+		}
 	}
 	if resp.StatusCode == http.StatusUnauthorized {
 		return consts.ErrTwitterApiUnauthorized
 	}
 
 	log.Printf("successfully followed or sent follow request to user [@%s]", user.ScreenName)
+
+	return nil
+}
+
+func (c *twitterClientImpl) UnfollowUser(ctx context.Context, screenName string) error {
+	// 鍵アカウントのフォロー申請の取り消しはできない
+	user, resp, err := c.client.Friendships.Destroy(&twitter.FriendshipDestroyParams{
+		ScreenName: screenName,
+	})
+	defer resp.Body.Close()
+	c.logResponse(resp)
+	if err != nil {
+		return xerrors.Errorf("failed to call twitter destroy follow api: %w", err)
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return consts.ErrTwitterApiUnauthorized
+	}
+
+	log.Printf("successfully unfollowed user [@%s]. if private account, could not sent unfollow request", user.ScreenName)
 
 	return nil
 }

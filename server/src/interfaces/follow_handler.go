@@ -34,5 +34,9 @@ func (h *followHandlerImpl) FollowUser(ctx context.Context, msg *pb.FollowUserMe
 
 func (h *followHandlerImpl) UnfollowUser(ctx context.Context, msg *pb.UnfollowUserMessage) (*emptypb.Empty, error) {
 	log.Print("-----------UnfollowUser-----------------")
-	return nil, nil
+	if err := h.twitterService.UnfollowUser(ctx, msg.ScreenName); err != nil {
+		return nil, xerrors.Errorf("failed to twitterService.FollowUser: %w", err)
+	}
+
+	return &emptypb.Empty{}, nil
 }

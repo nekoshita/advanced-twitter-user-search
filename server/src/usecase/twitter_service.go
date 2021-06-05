@@ -12,6 +12,7 @@ import (
 type TwitterService interface {
 	SearchUsers(ctx context.Context, query string) ([]domain.User, error)
 	FollowUser(ctx context.Context, screenName string) error
+	UnfollowUser(ctx context.Context, screenName string) error
 }
 
 type twitterServiceImpl struct {
@@ -58,6 +59,12 @@ func (s *twitterServiceImpl) FollowUser(ctx context.Context, screenName string) 
 	if err := s.twitterClient.FollowUser(ctx, screenName); err != nil {
 		return xerrors.Errorf("failed to twitterClient.FollowUser: %w", err)
 	}
+	return nil
+}
 
+func (s *twitterServiceImpl) UnfollowUser(ctx context.Context, screenName string) error {
+	if err := s.twitterClient.UnfollowUser(ctx, screenName); err != nil {
+		return xerrors.Errorf("failed to twitterClient.UnfollowUser: %w", err)
+	}
 	return nil
 }
