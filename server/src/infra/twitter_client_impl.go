@@ -35,7 +35,7 @@ func NewTwitterClient(
 }
 
 // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-search
-// 仕様で20が最大値
+// max value for searchParamCount is 20
 const (
 	searchParamCount        = 20
 	searchParamPageMinValue = 1
@@ -43,7 +43,8 @@ const (
 )
 
 // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/get-users-search
-// pageは1が最小値、51が最大値（つまり、最大で検索可能なユーザーは1000件まで）
+// page must be bigger than 0, less than 52
+// (you can search for 1,000 users at most for the given query)
 func (c *twitterClientImpl) SearchUsers(ctx context.Context, query string, page int) ([]domain.User, error) {
 	if page < searchParamPageMinValue {
 		return nil, consts.ErrTwitterSearchParamPagesTooSmall
@@ -77,7 +78,9 @@ func (c *twitterClientImpl) SearchUsers(ctx context.Context, query string, page 
 }
 
 func (c *twitterClientImpl) FollowUser(ctx context.Context, screenName string) error {
-	// すでにフォローしてる場合は200が返ってくる時と403が返ってくる場合がある
+	// https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/follow-search-get-users/api-reference/post-friendships-create
+	// > If the user is already friends with the user a HTTP 403 may be returned,
+	// > though for performance reasons this method may also return a HTTP 200 OK message even if the follow relationship already exists
 	user, resp, err := c.client.Friendships.Create(&twitter.FriendshipCreateParams{
 		ScreenName: screenName,
 	})
@@ -85,9 +88,10 @@ func (c *twitterClientImpl) FollowUser(ctx context.Context, screenName string) e
 	c.logResponse(resp)
 	if err != nil {
 		switch err.Error() {
-		// 鍵アカウントをすでにフォローしてる場合、[twitter: 160 You've already requested to follow lemor303442.]というエラーが返ってくる
-		// その場合はこのアプリケーション内部ではエラーとして扱わない
-		// エラーの文字列比較はしたくないが、go-twitterの実装上仕方がない
+		// If you already sent follow request to a private account,
+		// returned error will be "twitter: 160 You've already requested to follow lemor303442."
+		// This application will not handle it as error.
+		// (Hadnling errors by comparing string value is not preferred, but do it because of go-twitter implementation)
 		case fmt.Sprintf("twitter: 160 You've already requested to follow %s.", screenName):
 			log.Print(err)
 		default:
@@ -104,7 +108,7 @@ func (c *twitterClientImpl) FollowUser(ctx context.Context, screenName string) e
 }
 
 func (c *twitterClientImpl) UnfollowUser(ctx context.Context, screenName string) error {
-	// 鍵アカウントのフォロー申請の取り消しはできない
+	// This will not destory follow request to private account
 	user, resp, err := c.client.Friendships.Destroy(&twitter.FriendshipDestroyParams{
 		ScreenName: screenName,
 	})
@@ -124,6 +128,7 @@ func (c *twitterClientImpl) UnfollowUser(ctx context.Context, screenName string)
 
 func (c *twitterClientImpl) logResponse(resp *http.Response) {
 	// go-twitterは内部でgithub.com/dghubble/slingを利用してHTTPリクエストを送っている
-	// slingはresponse.Bodyはすでにcloseしているので、ここでresponse.Bodyを出力することはできない
+	// go-twitter uses github.com/dghubble/sling to send HTTP requests.
+	// You cant log response.Body because sling closes response.Body inside its library
 	log.Printf("requested to [%s:%s], response status code is [%d]", resp.Request.Method, resp.Request.URL, resp.StatusCode)
 }
