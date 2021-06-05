@@ -30,5 +30,10 @@ $ bin/gen_grpc_client
 ## Debugging
 ```
 $ grpcurl -plaintext localhost:50001 list
-$ grpcurl -plaintext -d '{"query":"Java"}' localhost:50001 advanced_twitter_user_search.UserService/SearchUsers
+$ grpcurl -plaintext localhost:50001 list advanced_twitter_user_search.UserService
+$ grpcurl -plaintext -d '{"query":"Java"}' localhost:50001 advanced_twitter_user_search.UserService.SearchUsers
+$ grpcurl -plaintext localhost:50001 list advanced_twitter_user_search.FollowService
+$ grpcurl -plaintext localhost:50001 describe advanced_twitter_user_search.FollowService.FollowUser
+$ grpcurl -plaintext -d '{"screenName":"star_news_ja"}' localhost:50001 advanced_twitter_user_search.FollowService.FollowUser
+$ grpcurl -plaintext -d '{"screenName":"star_news_ja"}' localhost:50001 advanced_twitter_user_search.FollowService.UnfollowUser
 ```
