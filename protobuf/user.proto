@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package advanced_twitter_user_search;
+
+option go_package = "github.com/nekoshita/advanced-twitter-user-search/server/src/interfaces/gen/advanced_twitter_user_search";
+
+service UserService {
+  rpc SearchUsers (SearchUsersMessage) returns (Users) {}
+}
+
+message SearchUsersMessage {
+  string query = 1;
+}
+
+message Users {
+  repeated User users = 1;
+}
+
+message User {
+  int64 id = 1;
+  string screenName = 2;
+  string description = 3;
+}
